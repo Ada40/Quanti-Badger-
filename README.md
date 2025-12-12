@@ -131,15 +131,15 @@ Quanti-Badger-/
 
 ⚠️ **Important**: This is a demonstration application. For production use, you should:
 
-1. Add proper authentication and authorization
-2. Use a database instead of in-memory storage
-3. Implement payment processing (Stripe, PayPal, etc.)
-4. Add file validation and virus scanning
-5. Implement rate limiting and DDoS protection
+1. **Add rate limiting** to prevent abuse of file download and static file endpoints (currently flagged by CodeQL)
+2. Add proper authentication and authorization
+3. Use a database instead of in-memory storage
+4. Implement payment processing (Stripe, PayPal, etc.)
+5. Add file validation and virus scanning
 6. Add HTTPS/SSL certificates
 7. Implement proper session management
 8. Add data encryption for sensitive information
-9. Verify purchases before allowing downloads
+9. Purchase verification is implemented, but should be enhanced with session-based tracking
 10. Add content moderation
 
 ## Development
