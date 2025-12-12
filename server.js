@@ -35,6 +35,7 @@ const upload = multer({
 let users = [];
 let listings = [];
 let transactions = [];
+let purchases = {}; // Track which users have purchased which listings
 let memberships = {
   basic: { name: 'Basic', price: 0, platformFee: 0.15 },
   premium: { name: 'Premium', price: 9.99, platformFee: 0.10 },
@@ -66,11 +67,16 @@ app.post('/api/listings', upload.single('file'), (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    const parsedPrice = parseFloat(price);
+    if (isNaN(parsedPrice) || parsedPrice <= 0) {
+      return res.status(400).json({ error: 'Price must be a positive number' });
+    }
+
     const listing = {
       id: uuidv4(),
       title,
       description,
-      price: parseFloat(price),
+      price: parsedPrice,
       category: category || 'other',
       sellerId: sellerId || 'anonymous',
       fileName: req.file.filename,
@@ -116,22 +122,33 @@ app.post('/api/purchase/:id', (req, res) => {
   transactions.push(transaction);
   listing.sales += 1;
 
+  // Track the purchase
+  if (!purchases[buyerId || 'anonymous']) {
+    purchases[buyerId || 'anonymous'] = [];
+  }
+  purchases[buyerId || 'anonymous'].push(listing.id);
+
   res.json({
     success: true,
     transaction,
-    downloadUrl: `/api/download/${listing.id}`
+    downloadUrl: `/api/download/${listing.id}?buyerId=${buyerId || 'anonymous'}`
   });
 });
 
 // Download purchased file
 app.get('/api/download/:id', (req, res) => {
   const listing = listings.find(l => l.id === req.params.id);
+  const buyerId = req.query.buyerId;
   
   if (!listing) {
     return res.status(404).json({ error: 'Listing not found' });
   }
 
-  // In production, verify purchase before allowing download
+  // Verify purchase
+  if (!buyerId || !purchases[buyerId] || !purchases[buyerId].includes(listing.id)) {
+    return res.status(403).json({ error: 'Access denied. Purchase required to download this file.' });
+  }
+
   res.download(listing.filePath, listing.originalName);
 });
 
@@ -167,7 +184,7 @@ app.post('/api/users/:userId/membership', (req, res) => {
 
 // Get user info
 app.get('/api/users/:userId', (req, res) => {
-  const user = users.find(u => u.id === req.params.id);
+  const user = users.find(u => u.id === req.params.userId);
   if (!user) {
     return res.status(404).json({ error: 'User not found' });
   }
