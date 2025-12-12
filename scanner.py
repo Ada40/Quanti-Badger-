@@ -10,6 +10,13 @@ from typing import List, Dict, Set
 from datetime import datetime
 import getpass
 
+# Import pwd for Unix-like systems (not available on Windows)
+try:
+    import pwd
+    PWD_AVAILABLE = True
+except ImportError:
+    PWD_AVAILABLE = False
+
 
 class FileScanner:
     """Scanner that identifies user-owned files across platforms."""
@@ -76,11 +83,12 @@ class FileScanner:
                 return os.access(filepath, os.W_OK)
             else:
                 # On Unix-like systems, check actual ownership
-                import pwd
+                if not PWD_AVAILABLE:
+                    return os.access(filepath, os.W_OK)
                 file_stat = os.stat(filepath)
                 file_owner = pwd.getpwuid(file_stat.st_uid).pw_name
                 return file_owner == self.current_user
-        except (OSError, KeyError, ImportError):
+        except (OSError, KeyError):
             return False
     
     def _is_available_to_sell(self, filepath: str) -> bool:

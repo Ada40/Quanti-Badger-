@@ -163,7 +163,7 @@ class TestFileScanner:
                 for key in required_keys:
                     assert key in file_info, f"Missing key: {key}"
                 
-                assert file_info['available_to_sell'] == True
+                assert file_info['available_to_sell']
                 
                 print("✓ File info structure test passed")
         finally:
