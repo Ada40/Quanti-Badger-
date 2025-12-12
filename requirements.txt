@@ -1,0 +1,19 @@
+# Requirements for Quanti-Badger Device Scanner
+
+# No external dependencies required for core functionality
+# The scanner uses only Python standard library modules:
+# - os
+# - platform
+# - pathlib
+# - typing
+# - datetime
+# - getpass
+# - argparse
+# - json
+# - sys
+
+# Python version requirement
+# Python >= 3.7
+
+# Optional dependencies for future enhancements:
+# pytest>=7.0.0  # For running tests
